@@ -16,8 +16,11 @@ _SAFE_TITLE_PATTERN = re.compile(r"[^0-9A-Za-zА-Яа-яЁё _-]+")
 def _sanitize_title(title: str) -> str:
     normalized = re.sub(r"\s+", " ", title.strip())
     cleaned = _SAFE_TITLE_PATTERN.sub("", normalized)
-    safe = cleaned.replace(" ", "_")
-    return safe or "note"
+    safe = cleaned.strip()
+    if not safe:
+        return "Note"
+    safe = " ".join(word.capitalize() for word in safe.split(" "))
+    return safe
 
 
 def build_note(
@@ -32,7 +35,7 @@ def build_note(
     created_at = datetime.now(timezone)
     start_or_now = entry.start_time or existing_time or get_now_time(timezone)
     safe_title = _sanitize_title(entry.title)
-    file_name = f"{safe_title}_{entry.date.isoformat()}_{start_or_now.strftime('%H-%M')}.md"
+    file_name = f"{safe_title} {entry.date.isoformat()} {start_or_now.strftime('%H-%M')}.md"
     file_path = base_dir / file_name
     note_id = uuid.uuid4().hex
 
