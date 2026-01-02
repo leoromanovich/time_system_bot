@@ -5,21 +5,35 @@ from aiogram import Router
 from aiogram.filters import CommandStart, Command
 from aiogram.types import Message
 
-from time_bot.bot.utils import handle_time_entry_message
+from time_bot.bot.utils import (
+    STATS_BUTTON_TEXT,
+    build_daily_stats_message,
+    get_main_keyboard,
+    handle_time_entry_message,
+)
 
 router = Router()
 
 
 @router.message(CommandStart())
 async def handle_start(message: Message) -> None:
-    await message.answer("Привет! Отправь описание активности, например '30 минут спортзал'.")
+    await message.answer(
+        "Привет! Отправь описание активности, например '30 минут спортзал'.",
+        reply_markup=get_main_keyboard(),
+    )
 
 
 @router.message(Command("help"))
 async def handle_help(message: Message) -> None:
     await message.answer(
-        "Напиши, чем занимался и сколько времени ушло. Я превращу сообщение в заметку Obsidian."
+        "Напиши, чем занимался и сколько времени ушло. Я превращу сообщение в заметку Obsidian.",
+        reply_markup=get_main_keyboard(),
     )
+
+
+@router.message(lambda message: (message.text or "") == STATS_BUTTON_TEXT)
+async def handle_daily_stats(message: Message) -> None:
+    await message.answer(build_daily_stats_message(), reply_markup=get_main_keyboard())
 
 
 @router.message()
