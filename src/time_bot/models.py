@@ -7,6 +7,22 @@ from typing import Literal, Optional
 from pydantic import BaseModel, Field
 
 Maintag = Literal["w1", "w2", "rt", "rest"]
+Subtag = Literal[
+    "coding",
+    "wasting",
+    "social",
+    "walking",
+    "gym",
+    "writing",
+    "reading",
+    "systematization",
+    "watching",
+    "technical",
+    "learning",
+    "health",
+    "waiting",
+    "other",
+]
 
 
 class TimeEntry(BaseModel):
@@ -18,7 +34,7 @@ class TimeEntry(BaseModel):
     date: date
     start_time: Optional[time] = None
     maintag: Maintag
-    subtag: Optional[str] = None
+    subtag: Optional[Subtag] = None
     comment: Optional[str] = None
 
 
@@ -32,4 +48,4 @@ class TimeNote(BaseModel):
     entry: TimeEntry
 
 
-__all__ = ["Maintag", "TimeEntry", "TimeNote"]
+__all__ = ["Maintag", "Subtag", "TimeEntry", "TimeNote"]

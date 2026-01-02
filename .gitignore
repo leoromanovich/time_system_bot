@@ -3,4 +3,4 @@
 /logs/
 /cache/
 .idea/
-
+__pycache__/

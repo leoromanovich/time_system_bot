@@ -47,6 +47,22 @@
     "subtag": {
       "anyOf": [
         {
+          "enum": [
+            "coding",
+            "wasting",
+            "social",
+            "walking",
+            "gym",
+            "writing",
+            "reading",
+            "systematization",
+            "watching",
+            "technical",
+            "learning",
+            "health",
+            "waiting",
+            "other"
+          ],
           "type": "string"
         },
         {
