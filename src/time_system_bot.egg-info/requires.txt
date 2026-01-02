@@ -1,0 +1,6 @@
+aiogram>=3.24.0
+openai>=2.14.0
+pydantic>=2.12.5
+pydantic-settings>=2.6.0
+pytest>=9.0.2
+python-dotenv>=1.2.1

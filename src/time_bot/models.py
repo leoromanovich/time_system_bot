@@ -1,0 +1,35 @@
+"""Data models shared across the project."""
+from __future__ import annotations
+
+from datetime import date, datetime, time
+from typing import Literal, Optional
+
+from pydantic import BaseModel, Field
+
+Maintag = Literal["w1", "w2", "rt", "rest"]
+
+
+class TimeEntry(BaseModel):
+    """Structured information extracted from a natural-language message."""
+
+    title: str = Field(..., min_length=3)
+    raw_text: str
+    minutes: int = Field(..., ge=1, le=12 * 60)
+    date: date
+    start_time: Optional[time] = None
+    maintag: Maintag
+    subtag: Optional[str] = None
+    comment: Optional[str] = None
+
+
+class TimeNote(BaseModel):
+    """Metadata for an Obsidian note derived from a time entry."""
+
+    note_id: str
+    file_name: str
+    file_path: str
+    created_at: datetime
+    entry: TimeEntry
+
+
+__all__ = ["Maintag", "TimeEntry", "TimeNote"]

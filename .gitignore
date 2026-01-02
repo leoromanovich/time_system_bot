@@ -1,0 +1,6 @@
+/.env
+/vault/
+/logs/
+/cache/
+.idea/
+

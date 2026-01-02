@@ -1,0 +1,81 @@
+{
+  "description": "Structured information extracted from a natural-language message.",
+  "properties": {
+    "title": {
+      "minLength": 3,
+      "title": "Title",
+      "type": "string"
+    },
+    "raw_text": {
+      "title": "Raw Text",
+      "type": "string"
+    },
+    "minutes": {
+      "maximum": 720,
+      "minimum": 1,
+      "title": "Minutes",
+      "type": "integer"
+    },
+    "date": {
+      "format": "date",
+      "title": "Date",
+      "type": "string"
+    },
+    "start_time": {
+      "anyOf": [
+        {
+          "format": "time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Start Time"
+    },
+    "maintag": {
+      "enum": [
+        "w1",
+        "w2",
+        "rt",
+        "rest"
+      ],
+      "title": "Maintag",
+      "type": "string"
+    },
+    "subtag": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Subtag"
+    },
+    "comment": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Comment"
+    }
+  },
+  "required": [
+    "title",
+    "raw_text",
+    "minutes",
+    "date",
+    "maintag"
+  ],
+  "title": "TimeEntry",
+  "type": "object"
+}

@@ -1,0 +1,24 @@
+[project]
+name = "time-system-bot"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "aiogram>=3.24.0",
+    "openai>=2.14.0",
+    "pydantic>=2.12.5",
+    "pydantic-settings>=2.6.0",
+    "pytest>=9.0.2",
+    "python-dotenv>=1.2.1",
+]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

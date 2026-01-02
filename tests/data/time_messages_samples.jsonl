@@ -1,0 +1,4 @@
+{"input": "45 мин писал код, делал фичу для бэкенда", "expected": {"minutes": 45, "maintag": "w1", "subtag": "coding"}}
+{"input": "1.5 часа болтали с коллегами про работу", "expected": {"minutes": 90, "maintag": "w2", "subtag": "social"}}
+{"input": "30 минут спортзал", "expected": {"minutes": 30, "maintag": "rt", "subtag": "sports"}}
+{"input": "40 мин чистил зубы", "expected": {"minutes": 40, "maintag": "rt", "subtag": "hygiene"}}
