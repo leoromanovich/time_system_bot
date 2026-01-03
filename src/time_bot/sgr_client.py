@@ -108,6 +108,17 @@ def _get_client() -> AsyncOpenAI:
     return _CLIENT
 
 
+def _extract_json_text(content: str) -> str:
+    """Some models wrap JSON with stray characters; trim to the outermost braces."""
+
+    content = content.strip()
+    start = content.find("{")
+    end = content.rfind("}")
+    if start == -1 or end == -1 or end <= start:
+        return content
+    return content[start : end + 1]
+
+
 async def parse_time_entry_with_sgr(message_text: str, today: date) -> TimeEntry:
     """Call the structured parsing model and validate the result."""
 
@@ -142,7 +153,7 @@ async def parse_time_entry_with_sgr(message_text: str, today: date) -> TimeEntry
         content_str = content
 
     try:
-        payload = json.loads(content_str)
+        payload = json.loads(_extract_json_text(content_str))
     except json.JSONDecodeError as exc:
         raise SGRParseError(f"LLM returned invalid JSON: {exc}\nContent: {content_str}") from exc
 
