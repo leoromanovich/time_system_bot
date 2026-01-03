@@ -109,14 +109,24 @@ def _get_client() -> AsyncOpenAI:
 
 
 def _extract_json_text(content: str) -> str:
-    """Some models wrap JSON with stray characters; trim to the outermost braces."""
+    """Some models wrap JSON with stray characters; try to isolate the first full object."""
 
-    content = content.strip()
-    start = content.find("{")
-    end = content.rfind("}")
-    if start == -1 or end == -1 or end <= start:
-        return content
-    return content[start : end + 1]
+    text = content.strip()
+    length = len(text)
+    for start in range(length):
+        if text[start] != "{":
+            continue
+        depth = 0
+        for end in range(start, length):
+            char = text[end]
+            if char == "{":
+                depth += 1
+            elif char == "}":
+                depth -= 1
+                if depth == 0:
+                    return text[start : end + 1]
+        # unmatched braces, try next start
+    return text
 
 
 async def parse_time_entry_with_sgr(message_text: str, today: date) -> TimeEntry:
