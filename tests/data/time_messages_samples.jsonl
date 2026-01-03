@@ -4,3 +4,4 @@
 {"input": "40 мин чистил зубы", "expected": {"minutes": 40, "maintag": "rt", "subtag": "health"}}
 {"input": "10 минут. Ожидание, рутина", "expected": {"minutes": 10, "maintag": "rt", "subtag": "waiting"}}
 {"input": "30 минут путь домой", "expected": {"minutes": 30, "maintag": "rt", "subtag": "walking"}}
+{"input": "30 минут Обед", "expected": {"minutes": 30, "maintag": "rt", "subtag": "rest"}}
