@@ -52,7 +52,10 @@ async def process_message_text(
     tz = get_timezone(settings.timezone)
     today_value = today or get_today(tz)
     base_dir = output_dir or Path(settings.obsidian_vault_dir)
-    tasks_dir = Path(settings.task_notes_dir) if settings.task_notes_dir else base_dir / "tasks"
+    if output_dir is not None:
+        tasks_dir = Path(output_dir) / "tasks"
+    else:
+        tasks_dir = Path(settings.obsidian_tasks_path)
 
     classification = await classify_message_intent(text)
     if classification.intent == "time_log":
