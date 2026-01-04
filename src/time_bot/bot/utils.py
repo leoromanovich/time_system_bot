@@ -5,7 +5,7 @@ from aiogram.types import KeyboardButton, Message, ReplyKeyboardMarkup
 
 from time_bot.config import get_settings
 from time_bot.logging_utils import log_event
-from time_bot.pipeline import process_message_text
+from time_bot.pipeline import PipelineResult, UnsupportedIntentError, process_message_text
 from time_bot.sgr_client import SGRParseError
 from time_bot.stats import get_daily_stats
 from time_bot.time_utils import get_timezone, get_today
@@ -45,6 +45,15 @@ async def handle_time_entry_message(message: Message) -> None:
         return
     try:
         result = await process_message_text(text)
+    except UnsupportedIntentError as exc:
+        log_event({"status": "error", "raw_text": text, "error": str(exc)})
+        intent = getattr(exc, "intent", None)
+        if intent == "journal":
+            response = "Записи в дневник пока не поддерживаются."
+        else:
+            response = "Эта категория сообщений пока не поддерживается."
+        await message.answer(response, reply_markup=get_main_keyboard())
+        return
     except SGRParseError as exc:
         log_event({"status": "error", "raw_text": text, "error": str(exc)})
         await message.answer(
@@ -59,16 +68,33 @@ async def handle_time_entry_message(message: Message) -> None:
             reply_markup=get_main_keyboard(),
         )
         return
-    await message.answer(
-        "\n".join(
+    await message.answer(_build_success_message(result), reply_markup=get_main_keyboard())
+
+
+def _build_success_message(result: PipelineResult) -> str:
+    if result.note_type == "time_log" and result.time_entry:
+        entry = result.time_entry
+        return "\n".join(
             [
                 "Запись создана",
-                f"{result.entry_minutes} мин, maintag={result.maintag}, subtag={result.subtag or '-'}",
+                f"{entry.minutes} мин, maintag={entry.maintag}, subtag={entry.subtag or '-'}",
                 f"Файл: {result.file_name}",
             ]
-        ),
-        reply_markup=get_main_keyboard(),
-    )
+        )
+    if result.note_type == "task" and result.task_entry:
+        entry = result.task_entry
+        due_text = entry.due.isoformat() if entry.due else "не указано"
+        project_text = ", ".join(entry.project)
+        return "\n".join(
+            [
+                "Задача создана",
+                entry.title,
+                f"Срок: {due_text}",
+                f"Проект: {project_text}",
+                f"Файл: {result.file_name}",
+            ]
+        )
+    return "Запись создана"
 
 
 __all__ = ["STATS_BUTTON_TEXT", "get_main_keyboard", "build_daily_stats_message"]

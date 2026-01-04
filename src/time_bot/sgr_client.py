@@ -12,7 +12,7 @@ from openai import APIError
 from openai import OpenAIError
 
 from time_bot.config import get_settings
-from time_bot.models import MessageClassification, TimeEntry
+from time_bot.models import MessageClassification, TaskEntry, TimeEntry
 
 
 class SGRParseError(RuntimeError):
@@ -86,25 +86,63 @@ CLASSIFIER_USER_PROMPT_TEMPLATE = """Определи назначение со�
 Верни JSON строго по схеме. raw_text должен совпадать с текстом выше. В explanation кратко поясни, на чём основано решение.
 """
 
+TASK_SYSTEM_PROMPT = """Ты — парсер задач для личного бота.
+Нужно извлечь структуру TaskEntry:
+- title — короткое название задачи на языке пользователя.
+- raw_text — оригинальный текст запроса.
+- due — дата дедлайна (YYYY-MM-DD). Если срок не указан явно, верни null. Если указан относительный срок (сегодня, завтра, в пятницу и т.д.), вычисляй дату относительно значения date из контекста с учётом timezone (это московское время).
+- project — массив значений coding или routine. Используй coding, если задача связана с программированием/кодингом/разработкой; иначе routine.
+Соблюдай правила:
+1. Не выдумывай детали — только то, что есть в тексте.
+2. Если упомянута конкретная дата, используй её как due.
+3. Если упомянуто «завтра», «через два дня» и т.п., вычисляй дату относительно date из контекста.
+4. Даже если срок не указан, всегда формируй осмысленный title.
+5. Ответ должен строго соответствовать JSON-схеме.
+"""
+
+TASK_USER_PROMPT_TEMPLATE = """Разбери задачу по схеме TaskEntry. Контекст содержит текущую дату и таймзону (Москва).
+
+Контекст:
+{context_json}
+
+Сообщение:
+<<<
+{message}
+>>>
+
+Верни только JSON. raw_text обязан совпадать с текстом выше.
+"""
+
 
 class _Message(TypedDict):
     role: str
     content: str
 
 
-def _build_context_json(message_text: str, today: date) -> str:
+def _build_context_json(message_text: str, today: date, timezone: str | None = None) -> str:
     context = {
         "raw_text": message_text,
         "date": today.isoformat(),
     }
+    if timezone:
+        context["timezone"] = timezone
     return json.dumps(context, ensure_ascii=False)
 
 
-def _build_time_entry_messages(message_text: str, today: date) -> List[_Message]:
-    context_json = _build_context_json(message_text, today)
+def _build_time_entry_messages(message_text: str, today: date, timezone: str) -> List[_Message]:
+    context_json = _build_context_json(message_text, today, timezone)
     user_prompt = TIME_ENTRY_USER_PROMPT_TEMPLATE.format(context_json=context_json, message=message_text)
     return [
         {"role": "system", "content": TIME_ENTRY_SYSTEM_PROMPT},
+        {"role": "user", "content": user_prompt},
+    ]
+
+
+def _build_task_messages(message_text: str, today: date, timezone: str) -> List[_Message]:
+    context_json = _build_context_json(message_text, today, timezone)
+    user_prompt = TASK_USER_PROMPT_TEMPLATE.format(context_json=context_json, message=message_text)
+    return [
+        {"role": "system", "content": TASK_SYSTEM_PROMPT},
         {"role": "user", "content": user_prompt},
     ]
 
@@ -158,7 +196,7 @@ async def parse_time_entry_with_sgr(message_text: str, today: date) -> TimeEntry
 
     client = _get_client()
     settings = get_settings()
-    messages = _build_time_entry_messages(message_text, today)
+    messages = _build_time_entry_messages(message_text, today, settings.timezone)
     schema = _load_schema("time_entry")
     try:
         response = await client.chat.completions.create(
@@ -196,6 +234,54 @@ async def parse_time_entry_with_sgr(message_text: str, today: date) -> TimeEntry
 
     try:
         entry = TimeEntry.model_validate(payload)
+    except Exception as exc:
+        raise SGRParseError(f"Response does not match schema: {exc}\nPayload: {payload}") from exc
+
+    return entry
+
+
+async def parse_task_entry_with_sgr(message_text: str, today: date, timezone: str) -> TaskEntry:
+    """Call the structured parsing model for tasks."""
+
+    client = _get_client()
+    settings = get_settings()
+    messages = _build_task_messages(message_text, today, timezone)
+    schema = _load_schema("task_entry")
+    try:
+        response = await client.chat.completions.create(
+            model=settings.model_name,
+            messages=messages,
+            temperature=0,
+            response_format={
+                "type": "json_schema",
+                "json_schema": {"name": "task_entry", "schema": schema},
+            },
+        )
+    except (APIError, OpenAIError, ConnectionError) as exc:
+        raise SGRParseError(f"Failed to call SGR endpoint: {exc}") from exc
+
+    if not response.choices:
+        raise SGRParseError("LLM returned no choices")
+
+    content = response.choices[0].message.content
+    if not content:
+        raise SGRParseError("LLM response content is empty")
+
+    if isinstance(content, list):
+        content_str = "".join(part.get("text", "") for part in content if isinstance(part, dict))
+    else:
+        content_str = content
+
+    try:
+        payload = json.loads(_extract_json_text(content_str))
+    except json.JSONDecodeError as exc:
+        raise SGRParseError(f"LLM returned invalid JSON: {exc}\nContent: {content_str}") from exc
+
+    payload.setdefault("raw_text", message_text)
+    payload.setdefault("project", ["routine"])
+
+    try:
+        entry = TaskEntry.model_validate(payload)
     except Exception as exc:
         raise SGRParseError(f"Response does not match schema: {exc}\nPayload: {payload}") from exc
 
@@ -255,4 +341,4 @@ async def classify_message_intent(message_text: str) -> MessageClassification:
         raise SGRParseError(f"Response does not match schema: {exc}\nPayload: {payload}") from exc
 
 
-__all__ = ["SGRParseError", "parse_time_entry_with_sgr", "classify_message_intent"]
+__all__ = ["SGRParseError", "parse_time_entry_with_sgr", "parse_task_entry_with_sgr", "classify_message_intent"]

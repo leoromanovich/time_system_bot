@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime, time
-from typing import Literal, Optional
+from typing import List, Literal, Optional
 
 from pydantic import BaseModel, Field
 
@@ -27,6 +27,7 @@ Subtag = Literal[
 ]
 
 MessageIntent = Literal["task", "journal", "time_log"]
+ProjectTag = Literal["coding", "routine"]
 
 
 class TimeEntry(BaseModel):
@@ -60,6 +61,25 @@ class MessageClassification(BaseModel):
     explanation: Optional[str] = None
 
 
+class TaskEntry(BaseModel):
+    """Structured task details for Obsidian task notes."""
+
+    title: str = Field(..., min_length=3)
+    raw_text: str
+    due: Optional[date] = None
+    project: List[ProjectTag] = Field(..., min_length=1)
+
+
+class TaskNote(BaseModel):
+    """Metadata for an Obsidian task note."""
+
+    note_id: str
+    file_name: str
+    file_path: str
+    created_at: datetime
+    entry: TaskEntry
+
+
 __all__ = [
     "Maintag",
     "Subtag",
@@ -67,4 +87,7 @@ __all__ = [
     "TimeNote",
     "MessageIntent",
     "MessageClassification",
+    "ProjectTag",
+    "TaskEntry",
+    "TaskNote",
 ]
