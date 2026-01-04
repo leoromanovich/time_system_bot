@@ -61,7 +61,7 @@
             "learning",
             "health",
             "waiting",
-            "hobby",
+            "rest",
             "other"
           ],
           "type": "string"

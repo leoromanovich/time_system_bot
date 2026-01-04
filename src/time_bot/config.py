@@ -25,6 +25,21 @@ class Settings(BaseSettings):
     cache_dir: Path = Field(Path("cache"), alias="CACHE_DIR")
     log_dir: Path = Field(Path("logs"), alias="LOG_DIR")
 
+    food_track_model_name: Optional[str] = Field(None, alias="FOOD_TRACK_MODEL_NAME")
+    food_track_model_endpoint: Optional[str] = Field(None, alias="FOOD_TRACK_MODEL_ENDPOINT")
+    food_track_openai_api_key: Optional[SecretStr] = Field(
+        None, alias="FOOD_TRACK_OPENAI_API_KEY"
+    )
+    food_track_obsidian_vault_dir: Optional[Path] = Field(
+        None, alias="FOOD_TRACK_OBSIDIAN_VAULT_DIR"
+    )
+    food_track_photo_intake_url: Optional[str] = Field(
+        None, alias="FOOD_TRACK_PHOTO_INTAKE_URL"
+    )
+    food_track_photo_intake_token: Optional[str] = Field(
+        None, alias="FOOD_TRACK_PHOTO_INTAKE_TOKEN"
+    )
+
 
 _SETTINGS: Optional[Settings] = None
 
