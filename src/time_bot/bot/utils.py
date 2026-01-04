@@ -12,12 +12,11 @@ from time_bot.time_utils import get_timezone, get_today
 
 
 STATS_BUTTON_TEXT = "Статистика за сегодня"
-ADD_FOOD_BUTTON_TEXT = "Добавить еду"
 
 
 def get_main_keyboard() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
-        keyboard=[[KeyboardButton(text=STATS_BUTTON_TEXT), KeyboardButton(text=ADD_FOOD_BUTTON_TEXT)]],
+        keyboard=[[KeyboardButton(text=STATS_BUTTON_TEXT)]],
         resize_keyboard=True,
     )
 
@@ -72,4 +71,4 @@ async def handle_time_entry_message(message: Message) -> None:
     )
 
 
-__all__ = ["STATS_BUTTON_TEXT", "ADD_FOOD_BUTTON_TEXT", "get_main_keyboard", "build_daily_stats_message"]
+__all__ = ["STATS_BUTTON_TEXT", "get_main_keyboard", "build_daily_stats_message"]

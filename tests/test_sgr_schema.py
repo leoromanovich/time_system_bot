@@ -38,7 +38,6 @@ def test_subtag_enum_values() -> None:
         "learning",
         "other",
         "reading",
-        "rest",
         "social",
         "systematization",
         "technical",

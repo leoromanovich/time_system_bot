@@ -21,7 +21,3 @@ scripts/
 ```
 
 Use `.env.example` as a template for configuring local secrets (Telegram token, OpenAI key, Obsidian vault path, timezone, cache dir).
-
-## Food tracker
-
-The Telegram bot now includes the food tracking flow from `tmp_sources/food_calendar`. Use the “Добавить еду” button next to “Статистика за сегодня” to open the inline menu. Environment variables prefixed with `FOOD_TRACK_` control the model that recognizes compositions and where Markdown files (FoodLog, ConditionLog, etc.) are stored.

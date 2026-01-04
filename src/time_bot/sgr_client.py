@@ -31,7 +31,7 @@ SYSTEM_PROMPT = """Ты — парсер временных записей.
             rest (отдых, прогулки, походы в кино, театр и т.п., встречи с друзьями).
 - subtag — конкретизация занятия. Возможные значения:
   coding, wasting, social, walking, gym, writing, reading, systematization,
-  watching, technical, learning, health, waiting, rest, other.
+  watching, technical, learning, health, waiting, other.
 - comment — произвольный комментарий, если есть дополнительные детали.
 - raw_text — полный оригинальный текст сообщения.
 Соблюдай следующие правила:
