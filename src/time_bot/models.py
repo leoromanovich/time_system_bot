@@ -21,6 +21,7 @@ Subtag = Literal[
     "learning",
     "health",
     "waiting",
+    "rest",
     "other",
 ]
 
