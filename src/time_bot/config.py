@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     sgr_endpoint: Optional[str] = Field(None, alias="SGR_ENDPOINT")
 
     obsidian_vault_dir: Path = Field(..., alias="OBSIDIAN_VAULT_DIR")
+    task_notes_dir: Optional[Path] = Field(None, alias="TASKS_DIR")
     timezone: str = Field("Europe/Riga", alias="TIMEZONE")
 
     cache_dir: Path = Field(Path("cache"), alias="CACHE_DIR")

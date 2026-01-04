@@ -6,7 +6,7 @@ import uuid
 from datetime import datetime, time
 from pathlib import Path
 
-from time_bot.models import TimeEntry, TimeNote
+from time_bot.models import TaskEntry, TaskNote, TimeEntry, TimeNote
 from time_bot.time_utils import get_now_time
 
 
@@ -48,4 +48,22 @@ def build_note(
     )
 
 
-__all__ = ["build_note"]
+def build_task_note(entry: TaskEntry, tasks_dir: Path, timezone) -> TaskNote:
+    """Create a task note with deterministic metadata."""
+
+    created_at = datetime.now(timezone)
+    safe_title = _sanitize_title(entry.title)
+    file_name = f"{safe_title}.md"
+    file_path = tasks_dir / file_name
+    note_id = uuid.uuid4().hex
+
+    return TaskNote(
+        note_id=note_id,
+        file_name=file_name,
+        file_path=str(file_path),
+        created_at=created_at,
+        entry=entry,
+    )
+
+
+__all__ = ["build_note", "build_task_note"]

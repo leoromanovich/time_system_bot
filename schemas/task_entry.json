@@ -1,0 +1,46 @@
+{
+  "description": "Structured task details for Obsidian task notes.",
+  "properties": {
+    "title": {
+      "minLength": 3,
+      "title": "Title",
+      "type": "string"
+    },
+    "raw_text": {
+      "title": "Raw Text",
+      "type": "string"
+    },
+    "due": {
+      "anyOf": [
+        {
+          "format": "date",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Due"
+    },
+    "project": {
+      "items": {
+        "enum": [
+          "coding",
+          "routine"
+        ],
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Project",
+      "type": "array"
+    }
+  },
+  "required": [
+    "title",
+    "raw_text",
+    "project"
+  ],
+  "title": "TaskEntry",
+  "type": "object"
+}
