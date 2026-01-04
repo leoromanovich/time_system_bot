@@ -1,7 +1,7 @@
 """Telegram handlers placeholders."""
 from __future__ import annotations
 
-from aiogram import F, Router
+from aiogram import Router
 from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
@@ -34,12 +34,12 @@ async def handle_help(message: Message) -> None:
     )
 
 
-@router.message(F.text == STATS_BUTTON_TEXT)
+@router.message(lambda message: (message.text or "") == STATS_BUTTON_TEXT)
 async def handle_daily_stats(message: Message) -> None:
     await message.answer(build_daily_stats_message(), reply_markup=get_main_keyboard())
 
 
-@router.message(F.text == ADD_FOOD_BUTTON_TEXT)
+@router.message(lambda message: (message.text or "") == ADD_FOOD_BUTTON_TEXT)
 async def handle_add_food_entry(message: Message, state: FSMContext) -> None:
     await state.clear()
     await message.answer(
