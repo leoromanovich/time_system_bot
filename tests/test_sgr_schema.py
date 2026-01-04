@@ -1,9 +1,10 @@
-from pathlib import Path
 import json
+from pathlib import Path
 
-from time_bot.models import TimeEntry
+from time_bot.models import MessageClassification, TimeEntry
 
 SCHEMA_PATH = Path("schemas/time_entry.json")
+CLASSIFICATION_SCHEMA_PATH = Path("schemas/message_classification.json")
 
 
 def test_schema_file_matches_model_schema() -> None:
@@ -35,9 +36,11 @@ def test_subtag_enum_values() -> None:
         "coding",
         "gym",
         "health",
+        "hobby",
         "learning",
         "other",
         "reading",
+        "rest",
         "social",
         "systematization",
         "technical",
@@ -47,3 +50,16 @@ def test_subtag_enum_values() -> None:
         "watching",
         "writing",
     ]
+
+
+def test_message_classification_schema_matches_model() -> None:
+    assert CLASSIFICATION_SCHEMA_PATH.exists(), "Classification schema file missing"
+    file_schema = json.loads(CLASSIFICATION_SCHEMA_PATH.read_text(encoding="utf-8"))
+    model_schema = MessageClassification.model_json_schema()
+    assert file_schema == model_schema
+
+
+def test_message_classification_intent_enum_values() -> None:
+    schema = json.loads(CLASSIFICATION_SCHEMA_PATH.read_text(encoding="utf-8"))
+    intent_schema = schema["properties"]["intent"]
+    assert sorted(intent_schema["enum"]) == ["journal", "task", "time_log"]

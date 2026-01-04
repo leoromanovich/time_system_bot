@@ -1,0 +1,36 @@
+{
+  "description": "LLM-backed classification for routing incoming messages.",
+  "properties": {
+    "intent": {
+      "enum": [
+        "task",
+        "journal",
+        "time_log"
+      ],
+      "title": "Intent",
+      "type": "string"
+    },
+    "raw_text": {
+      "title": "Raw Text",
+      "type": "string"
+    },
+    "explanation": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Explanation"
+    }
+  },
+  "required": [
+    "intent",
+    "raw_text"
+  ],
+  "title": "MessageClassification",
+  "type": "object"
+}

@@ -10,10 +10,11 @@ from aiogram.types import Message
 
 from time_bot.config import get_settings
 from time_bot.logging_utils import log_event
+from time_bot.models import MessageClassification
 from time_bot.note_builder import build_note
 from time_bot.note_renderer import render_markdown
 from time_bot.obsidian_writer import write_note_file
-from time_bot.sgr_client import parse_time_entry_with_sgr
+from time_bot.sgr_client import classify_message_intent, parse_time_entry_with_sgr
 from time_bot.time_utils import get_timezone, get_today
 
 
@@ -25,6 +26,7 @@ class PipelineResult:
     maintag: str
     subtag: Optional[str]
     file_name: str
+    classification: MessageClassification
 
 
 async def process_message_text(
@@ -38,6 +40,7 @@ async def process_message_text(
     today_value = today or get_today(tz)
     base_dir = output_dir or Path(settings.obsidian_vault_dir)
 
+    classification = await classify_message_intent(text)
     entry = await parse_time_entry_with_sgr(text, today_value)
     note = build_note(entry, base_dir, tz)
     markdown = render_markdown(note)
@@ -47,6 +50,7 @@ async def process_message_text(
         {
             "status": "success",
             "raw_text": text,
+            "intent": classification.intent,
             "minutes": entry.minutes,
             "maintag": entry.maintag,
             "subtag": entry.subtag,
@@ -63,6 +67,7 @@ async def process_message_text(
         maintag=entry.maintag,
         subtag=entry.subtag,
         file_name=note.file_name,
+        classification=classification,
     )
 
 

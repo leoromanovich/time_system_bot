@@ -13,6 +13,7 @@ Subtag = Literal[
     "social",
     "walking",
     "gym",
+    "hobby",
     "writing",
     "reading",
     "systematization",
@@ -20,9 +21,12 @@ Subtag = Literal[
     "technical",
     "learning",
     "health",
+    "rest",
     "waiting",
     "other",
 ]
+
+MessageIntent = Literal["task", "journal", "time_log"]
 
 
 class TimeEntry(BaseModel):
@@ -48,4 +52,19 @@ class TimeNote(BaseModel):
     entry: TimeEntry
 
 
-__all__ = ["Maintag", "Subtag", "TimeEntry", "TimeNote"]
+class MessageClassification(BaseModel):
+    """LLM-backed classification for routing incoming messages."""
+
+    intent: MessageIntent
+    raw_text: str
+    explanation: Optional[str] = None
+
+
+__all__ = [
+    "Maintag",
+    "Subtag",
+    "TimeEntry",
+    "TimeNote",
+    "MessageIntent",
+    "MessageClassification",
+]
