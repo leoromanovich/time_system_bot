@@ -18,7 +18,7 @@ def _render_time_entry(note: TimeNote) -> str:
     entry = note.entry
     frontmatter_lines = [
         "---",
-        "tags:",
+        "tags: task",
         "  - time_system",
         f"time: {entry.minutes}",
         f"date: {entry.date.isoformat()}",
