@@ -7,7 +7,9 @@ from aiogram.types import Message
 
 from time_bot.bot.utils import (
     STATS_BUTTON_TEXT,
+    TASKS_BUTTON_TEXT,
     build_daily_stats_message,
+    build_tasks_overview_message,
     get_main_keyboard,
     handle_time_entry_message,
 )
@@ -34,6 +36,11 @@ async def handle_help(message: Message) -> None:
 @router.message(lambda message: (message.text or "") == STATS_BUTTON_TEXT)
 async def handle_daily_stats(message: Message) -> None:
     await message.answer(build_daily_stats_message(), reply_markup=get_main_keyboard())
+
+
+@router.message(lambda message: (message.text or "") == TASKS_BUTTON_TEXT)
+async def handle_tasks_list(message: Message) -> None:
+    await message.answer(build_tasks_overview_message(), reply_markup=get_main_keyboard())
 
 
 @router.message()
