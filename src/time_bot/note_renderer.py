@@ -1,16 +1,18 @@
 """Utilities for turning note models into Markdown."""
 from __future__ import annotations
 
-from time_bot.models import TaskNote, TimeNote
+from time_bot.models import DiaryNote, TaskNote, TimeNote
 
 
-def render_markdown(note: TimeNote | TaskNote) -> str:
+def render_markdown(note: TimeNote | TaskNote | DiaryNote) -> str:
     """Render note into Obsidian-friendly Markdown."""
 
     if isinstance(note, TimeNote):
         return _render_time_entry(note)
     if isinstance(note, TaskNote):
         return _render_task(note)
+    if isinstance(note, DiaryNote):
+        return _render_diary(note)
     raise TypeError(f"Unsupported note type: {type(note)!r}")
 
 
@@ -65,6 +67,20 @@ def _render_task(note: TaskNote) -> str:
     ]
 
     return "\n".join(frontmatter_lines) + "\n\n" + "\n".join(body_lines) + "\n"
+
+
+def _render_diary(note: DiaryNote) -> str:
+    entry = note.entry
+    timestamp = entry.created_at.strftime("%Y-%m-%d %H-%M")
+    frontmatter_lines = [
+        "---",
+        "tags:",
+        "  - diary",
+        f"date: {timestamp}",
+        "---",
+    ]
+    body = entry.body.strip("\n")
+    return "\n".join(frontmatter_lines) + "\n\n" + (body + "\n")
 
 
 __all__ = ["render_markdown"]

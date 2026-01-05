@@ -79,6 +79,23 @@ class TaskNote(BaseModel):
     created_at: datetime
     entry: TaskEntry
 
+class DiaryEntry(BaseModel):
+    """Structured diary information."""
+
+    title: str = Field(..., min_length=1)
+    body: str
+    created_at: datetime
+
+
+class DiaryNote(BaseModel):
+    """Metadata for a diary note."""
+
+    note_id: str
+    file_name: str
+    file_path: str
+    created_at: datetime
+    entry: DiaryEntry
+
 
 __all__ = [
     "Maintag",
@@ -90,4 +107,6 @@ __all__ = [
     "ProjectTag",
     "TaskEntry",
     "TaskNote",
+    "DiaryEntry",
+    "DiaryNote",
 ]

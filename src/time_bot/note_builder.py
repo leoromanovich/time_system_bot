@@ -6,7 +6,7 @@ import uuid
 from datetime import datetime, time
 from pathlib import Path
 
-from time_bot.models import TaskEntry, TaskNote, TimeEntry, TimeNote
+from time_bot.models import DiaryEntry, DiaryNote, TaskEntry, TaskNote, TimeEntry, TimeNote
 from time_bot.time_utils import get_now_time
 
 
@@ -53,7 +53,8 @@ def build_task_note(entry: TaskEntry, tasks_dir: Path, timezone) -> TaskNote:
 
     created_at = datetime.now(timezone)
     safe_title = _sanitize_title(entry.title)
-    file_name = f"{safe_title}.md"
+    timestamp_str = created_at.strftime("%Y-%m-%d %H-%M")
+    file_name = f"{safe_title} {timestamp_str}.md"
     file_path = tasks_dir / file_name
     note_id = uuid.uuid4().hex
 
@@ -66,4 +67,23 @@ def build_task_note(entry: TaskEntry, tasks_dir: Path, timezone) -> TaskNote:
     )
 
 
-__all__ = ["build_note", "build_task_note"]
+def build_diary_note(entry: DiaryEntry, diary_dir: Path) -> DiaryNote:
+    """Create a diary note using the entry timestamp."""
+
+    created_at = entry.created_at
+    safe_title = _sanitize_title(entry.title)
+    timestamp_str = created_at.strftime("%Y-%m-%d %H-%M")
+    file_name = f"{safe_title} {timestamp_str}.md"
+    file_path = diary_dir / file_name
+    note_id = uuid.uuid4().hex
+
+    return DiaryNote(
+        note_id=note_id,
+        file_name=file_name,
+        file_path=str(file_path),
+        created_at=created_at,
+        entry=entry,
+    )
+
+
+__all__ = ["build_note", "build_task_note", "build_diary_note"]
