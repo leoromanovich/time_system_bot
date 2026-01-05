@@ -1,4 +1,5 @@
 from datetime import date
+from pathlib import Path
 
 import pytest
 
@@ -74,3 +75,33 @@ async def test_process_message_handles_task(tmp_path, monkeypatch):
     assert result.task_entry is not None
     assert result.task_entry.title == "Сходить в магазин"
     assert "tasks" in str(result.note_path)
+
+
+@pytest.mark.anyio
+async def test_process_message_handles_diary(tmp_path, monkeypatch):
+    sample_text = "Мысли о дне\nбыло много дел"
+    fake_classification = MessageClassification(
+        intent="journal",
+        raw_text=sample_text,
+        explanation="Looks like diary.",
+    )
+
+    async def _fake_classify(message_text: str):
+        assert message_text == sample_text
+        return fake_classification
+
+    async def _fail_parse(*args, **kwargs):
+        raise AssertionError("Parser should not be called for diary")
+
+    monkeypatch.setattr("time_bot.pipeline.classify_message_intent", _fake_classify)
+    monkeypatch.setattr("time_bot.pipeline.parse_time_entry_with_sgr", _fail_parse)
+    monkeypatch.setattr("time_bot.pipeline.parse_task_entry_with_sgr", _fail_parse)
+
+    result = await process_message_text(sample_text, today=date(2024, 1, 1), output_dir=tmp_path)
+    assert result.note_type == "diary"
+    assert result.diary_entry is not None
+    assert result.diary_entry.title == "Мысли о дне"
+    assert "diary" in str(result.note_path)
+    content = Path(result.note_path).read_text(encoding="utf-8")
+    assert "tags:" in content and "diary" in content
+    assert "мысли о дне".lower() in content.lower()

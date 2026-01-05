@@ -21,6 +21,7 @@ class Settings(BaseSettings):
 
     obsidian_vault_dir: Path = Field(..., alias="OBSIDIAN_VAULT_DIR")
     obsidian_tasks_path: Path = Field(..., alias="OBSIDIAN_TASKS_PATH")
+    obsidian_diary_folder: Path = Field(..., alias="OBSIDIAN_DIARY_FOLDER")
     timezone: str = Field("Europe/Riga", alias="TIMEZONE")
 
     cache_dir: Path = Field(Path("cache"), alias="CACHE_DIR")

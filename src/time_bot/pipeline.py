@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 from typing import Optional
 
@@ -10,8 +10,8 @@ from aiogram.types import Message
 
 from time_bot.config import get_settings
 from time_bot.logging_utils import log_event
-from time_bot.models import MessageClassification, TaskEntry, TimeEntry
-from time_bot.note_builder import build_note, build_task_note
+from time_bot.models import DiaryEntry, MessageClassification, TaskEntry, TimeEntry
+from time_bot.note_builder import build_diary_note, build_note, build_task_note
 from time_bot.note_renderer import render_markdown
 from time_bot.obsidian_writer import write_note_file
 from time_bot.sgr_client import (
@@ -40,6 +40,7 @@ class PipelineResult:
     note_type: str
     time_entry: TimeEntry | None = None
     task_entry: TaskEntry | None = None
+    diary_entry: DiaryEntry | None = None
 
 
 async def process_message_text(
@@ -54,8 +55,10 @@ async def process_message_text(
     base_dir = output_dir or Path(settings.obsidian_vault_dir)
     if output_dir is not None:
         tasks_dir = Path(output_dir) / "tasks"
+        diary_dir = Path(output_dir) / "diary"
     else:
         tasks_dir = Path(settings.obsidian_tasks_path)
+        diary_dir = Path(settings.obsidian_diary_folder)
 
     classification = await classify_message_intent(text)
     if classification.intent == "time_log":
@@ -71,6 +74,13 @@ async def process_message_text(
             text,
             today_value=today_value,
             tasks_dir=tasks_dir,
+            timezone=tz,
+            classification=classification,
+        )
+    if classification.intent == "journal":
+        return await _process_diary(
+            text,
+            diary_dir=diary_dir,
             timezone=tz,
             classification=classification,
         )
@@ -159,6 +169,49 @@ async def _process_task(
         note_type="task",
         task_entry=task_entry,
     )
+
+
+async def _process_diary(
+    text: str,
+    *,
+    diary_dir: Path,
+    timezone,
+    classification: MessageClassification,
+) -> PipelineResult:
+    entry = _build_diary_entry(text, timezone)
+    note = build_diary_note(entry, diary_dir)
+    markdown = render_markdown(note)
+    note_path = write_note_file(note.file_path, markdown)
+
+    log_event(
+        {
+            "status": "success",
+            "kind": "diary",
+            "raw_text": text,
+            "intent": classification.intent,
+            "title": entry.title,
+            "file_name": note.file_name,
+            "file_path": str(note_path),
+        }
+    )
+
+    return PipelineResult(
+        note_path=note_path,
+        markdown=markdown,
+        file_name=note.file_name,
+        classification=classification,
+        note_type="diary",
+        diary_entry=entry,
+    )
+
+
+def _build_diary_entry(text: str, timezone) -> DiaryEntry:
+    created_at = datetime.now(timezone)
+    lines = text.splitlines()
+    raw_title = lines[0].strip() if lines else ""
+    title = raw_title or "Запись"
+    body = text.strip() or title
+    return DiaryEntry(title=title, body=body, created_at=created_at)
 
 
 __all__ = ["process_message_text", "process_message", "PipelineResult", "UnsupportedIntentError"]

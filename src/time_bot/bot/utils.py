@@ -96,12 +96,10 @@ async def handle_time_entry_message(message: Message) -> None:
         result = await process_message_text(text)
     except UnsupportedIntentError as exc:
         log_event({"status": "error", "raw_text": text, "error": str(exc)})
-        intent = getattr(exc, "intent", None)
-        if intent == "journal":
-            response = "Записи в дневник пока не поддерживаются."
-        else:
-            response = "Эта категория сообщений пока не поддерживается."
-        await message.answer(response, reply_markup=get_main_keyboard())
+        await message.answer(
+            "Эта категория сообщений пока не поддерживается.",
+            reply_markup=get_main_keyboard(),
+        )
         return
     except SGRParseError as exc:
         log_event({"status": "error", "raw_text": text, "error": str(exc)})
@@ -140,6 +138,17 @@ def _build_success_message(result: PipelineResult) -> str:
                 entry.title,
                 f"Срок: {due_text}",
                 f"Проект: {project_text}",
+                f"Файл: {result.file_name}",
+            ]
+        )
+    if result.note_type == "diary" and result.diary_entry:
+        entry = result.diary_entry
+        timestamp = entry.created_at.strftime("%Y-%m-%d %H-%M")
+        return "\n".join(
+            [
+                "Запись в дневник создана",
+                entry.title,
+                f"Дата: {timestamp}",
                 f"Файл: {result.file_name}",
             ]
         )
